@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -26,11 +27,17 @@ public class SendMessageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_send_message);
         recipient = (EditText)findViewById(R.id.recipient_editText);
         message = (EditText)findViewById(R.id.message_editText);
+        setupButtons();
     }
 
-    public void sendMessage(View view){
-
-        new SendMessageTask().execute(recipient.getText().toString(), message.getText().toString());
+    public void setupButtons(){
+        final Button send = (android.widget.Button) findViewById(R.id.send_button);
+        send.setOnClickListener(new View.OnClickListener() {
+            //login
+            public void onClick(View w) {
+                new SendMessageTask().execute(recipient.getText().toString(), message.getText().toString());
+            }
+        });
     }
 
     class SendMessageTask extends AsyncTask<String, String, Integer> {
@@ -47,8 +54,8 @@ public class SendMessageActivity extends AppCompatActivity {
         @Override
         protected Integer doInBackground(String... params) {
 
-            UseCases uc = new UseCases(myApp);
-            Integer response = uc.sendMessage(myApp.getName(), params[0], params[1]);
+            ActionHandler a = new ActionHandler(myApp);
+            Integer response = a.sendMessage(myApp.getName(), params[0], params[1]);
             return response;
 
         }
@@ -59,7 +66,7 @@ public class SendMessageActivity extends AppCompatActivity {
             Log.d(TAG, "Rückgabe: " + response.toString());
 
             if(response == 0) {
-                Intent i = new Intent(SendMessageActivity.this, MainActivity.class);
+                Intent i = new Intent(SendMessageActivity.this, ViewActivity.class);
                 startActivity(i);
                 Toast.makeText(getApplicationContext(), "Sending successful!", Toast.LENGTH_LONG).show();
             }

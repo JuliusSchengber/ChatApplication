@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Integer doInBackground(String... params) {
 
-            UseCases uc = new UseCases(myApp);
-            Integer response = uc.login(params[0], params [1]);
+            ActionHandler a = new ActionHandler(myApp);
+            Integer response = a.login(params[0], params [1]);
             return response;
         }
 

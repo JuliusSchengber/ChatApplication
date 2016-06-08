@@ -15,7 +15,6 @@
         android:text="Login"
         android:id="@+id/login_button"
         android:layout_gravity="center_vertical"
-        android:onClick= "clickedLogin"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 

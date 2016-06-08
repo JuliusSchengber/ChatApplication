@@ -32,7 +32,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 
-public class Security {
+public class Functions {
     /**
      * PBKDF2 Funktion Algorithmus: sha-256, Länge: 256 Bit, Iterationen: 10000
      * @param password Passwort

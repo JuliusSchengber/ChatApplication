@@ -3,35 +3,14 @@ package webeng.chatapplication;
 /**
  * Created by JuliusSchengber1 on 07.06.16.
  */
-import android.util.Log;
 
-import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.encoders.Hex;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Random;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-
-public class UseCases {
+public class ActionHandler {
 
     MessengerApplication myApp;
-    private Security security = new Security();
+    private Functions security = new Functions();
     private JsonHandler jsonHandler = new JsonHandler();
 
-    public UseCases (MessengerApplication myapp) {
+    public ActionHandler(MessengerApplication myapp) {
         this.myApp = myapp;
     }
 
