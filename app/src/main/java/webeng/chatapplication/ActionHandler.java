@@ -39,6 +39,23 @@ public class ActionHandler {
         return 1;
     }
 
+    public int register(String name, String password){
+        String nameTest = "tim";
+        String passwordTest = "test";
+        int response = 5;
+        //Success
+        if(name.equals(nameTest) && password.equals(passwordTest)){
+            response = 0;
+            return response;
+        }
+        //Fail
+        else{
+            response = 1;
+            return response;
+        }
+
+    }
+
 }
 /*
     public int login(String name, String password) {

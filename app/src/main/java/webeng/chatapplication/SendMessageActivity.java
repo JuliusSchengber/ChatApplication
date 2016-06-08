@@ -3,12 +3,10 @@ package webeng.chatapplication;
 /**
  * Created by JuliusSchengber1 on 07.06.16.
  */
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,66 +14,55 @@ import android.widget.Toast;
 
 public class SendMessageActivity extends AppCompatActivity {
 
-
-    private static final String TAG = MainActivity.class.getName();
-    private EditText recipient;
-    private EditText message;
-
+    private EditText rcpt;
+    private EditText msg;
+    private String rcptString;
+    private String msgString;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_message);
-        recipient = (EditText)findViewById(R.id.recipient_editText);
-        message = (EditText)findViewById(R.id.message_editText);
+        rcpt = (EditText) findViewById(R.id.recipient_editText);
+        msg = (EditText) findViewById(R.id.message_editText);
         setupButtons();
     }
 
-    public void setupButtons(){
+    public void setupButtons() {
         final Button send = (android.widget.Button) findViewById(R.id.send_button);
         send.setOnClickListener(new View.OnClickListener() {
-            //login
             public void onClick(View w) {
-                new SendMessageTask().execute(recipient.getText().toString(), message.getText().toString());
+                rcptString = rcpt.getText().toString();
+                msgString = msg.getText().toString();
+                new SendMessageAction().execute(rcptString, msgString);
             }
         });
     }
 
-    class SendMessageTask extends AsyncTask<String, String, Integer> {
+    class SendMessageAction extends AsyncTask<String, String, Integer> {
 
-        private ProgressDialog Dialog = new ProgressDialog(SendMessageActivity.this);
         private MessengerApplication myApp = (MessengerApplication) getApplication();
 
         @Override
-        protected void onPreExecute() {
-            Dialog.setMessage("Send...");
-            Dialog.show();
-        }
-
-        @Override
         protected Integer doInBackground(String... params) {
-
             ActionHandler a = new ActionHandler(myApp);
             Integer response = a.sendMessage(myApp.getName(), params[0], params[1]);
             return response;
-
         }
 
         @Override
         protected void onPostExecute (Integer response) {
-            Dialog.dismiss();
-            Log.d(TAG, "Rückgabe: " + response.toString());
 
-            if(response == 0) {
+            if(response==0) {
                 Intent i = new Intent(SendMessageActivity.this, ViewActivity.class);
                 startActivity(i);
-                Toast.makeText(getApplicationContext(), "Sending successful!", Toast.LENGTH_LONG).show();
-            }
-
+                Toast.makeText(getApplicationContext(), "Nachricht erfolgreich an " + rcptString +"versendet.", Toast.LENGTH_SHORT).show();            }
             else {
-                Toast.makeText(getApplicationContext(), "Error" + response, Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Es ist ein Fehler aufgetreten, die Nachricht wurde nicht an " + rcptString + " zugestellt. Fehlercode: " + response +" Bitte erneut versuchen.", Toast.LENGTH_SHORT).show();
             }
+        }
+
         }
 
     }
 
-}
+

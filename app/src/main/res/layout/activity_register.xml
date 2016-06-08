@@ -2,4 +2,47 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:id="@+id/name_reg"
+        android:hint="username"
+        android:ems="10"
+        android:layout_above="@+id/password_reg"
+        android:layout_alignLeft="@+id/password_reg"
+        android:layout_alignStart="@+id/password_reg" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/password_conf_reg"
+        android:hint="password"
+        android:layout_above="@+id/register_reg_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="118dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Register"
+        android:id="@+id/register_reg_button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/password_reg"
+        android:hint="password"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/password_conf_reg"
+        android:layout_alignStart="@+id/password_conf_reg" />
+
+
 </RelativeLayout>
