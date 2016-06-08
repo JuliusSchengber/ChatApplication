@@ -28,6 +28,5 @@
         android:layout_below="@+id/sendMessage_button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="90dp"
-        android:onClick= "openShowInbox"
         />
 </RelativeLayout>

@@ -5,8 +5,8 @@ package webeng.chatapplication;
  */
 import android.util.Log;
 
-//import org.bouncycastle.util.encoders.Base64;
-//import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,9 +25,6 @@ import java.util.Random;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-/**
- * Created by Tim on 03.06.16.
- */
 public class UseCases {
 
     MessengerApplication myApp;
