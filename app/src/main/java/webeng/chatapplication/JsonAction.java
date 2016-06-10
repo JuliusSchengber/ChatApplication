@@ -1,15 +1,15 @@
 package webeng.chatapplication;
 
-/**
- * Created by JuliusSchengber1 on 07.06.16.
- */
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class JsonHandler {
+/**
+ * Created by JuliusSchengber1 on 10.06.16.
+ */
+public class JsonAction {
 
-    public JSONObject convert (String input) {
+    public JSONObject convertToJSON (String input) {
 
         JSONObject jObject = null;
         try {
@@ -22,7 +22,7 @@ public class JsonHandler {
 
     }
 
-    public String extractString (JSONObject input, String key) {
+    public String getString (JSONObject input, String key) {
 
         String output = "";
         if (input.has(key)) {
@@ -36,7 +36,7 @@ public class JsonHandler {
         return output;
     }
 
-    public int extractInt (JSONObject input, String key) {
+    public int getInt (JSONObject input, String key) {
 
         int output = 98;
         if (input.has(key)) {
@@ -50,7 +50,7 @@ public class JsonHandler {
         return output;
     }
 
-    public JSONArray extractArray (JSONObject input, String key) {
+    public JSONArray getArray (JSONObject input, String key) {
 
         JSONArray output = null;
         if (input.has(key)) {
