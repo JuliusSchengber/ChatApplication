@@ -51,12 +51,12 @@ public class RegisterActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Integer response) {
-            if (response == 0) {
+            if (response == 200) {
                 Toast.makeText(getApplicationContext(), "Erfolgreich registriert", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(RegisterActivity.this, MainActivity.class);
                 startActivity(i);
             } else {
-                Toast.makeText(getApplicationContext(), "Fehler", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Fehler " + response , Toast.LENGTH_SHORT).show();
             }
         }
     }
