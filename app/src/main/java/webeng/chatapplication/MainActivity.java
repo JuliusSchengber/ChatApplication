@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute (Integer response) {
-            if(response == 0) {
+            if(response == 200) {
                 startActivity(new Intent(MainActivity.this, ViewActivity.class));
                 Toast.makeText(getApplicationContext(), "Login erfolgreich", Toast.LENGTH_SHORT).show();
             }

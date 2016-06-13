@@ -4,6 +4,8 @@ import android.util.Log;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.security.Key;
 import java.security.KeyPair;
@@ -111,21 +113,22 @@ public class ActionHandler {
         }
 
         //Übergabestring erstellen
-        String value = "{\"user\":\"" + name + "\",\"salt_masterkey\":\"" + Hex.toHexString(salt_masterkey) + "\",\"pubkey\":\"" + publickey64 + "\",\"privkey_enc\":\"" + Hex.toHexString(privkey_user_enc) + "\"}";
+        String value = "{\"salt_masterkey\":\"" + Hex.toHexString(salt_masterkey) + "\",\"pubkey\":\"" + publickey64 + "\",\"privkey_enc\":\"" + Hex.toHexString(privkey_user_enc) + "\"}";
 
         //Verbindung zum Server herstellen
         String success;
         try {
-            success = serverCommunication.sendPost("/user", value);
+            success = serverCommunication.sendPost(name, value);
         } catch (Exception e) {
             return 99;
         }
-        Log.d(TAG, "Übergabestring: " + value);
-        Log.d(TAG, "Rückgabestring: " + success);
+        Log.d(TAG, "Übergabestring(register): " + value);
+        Log.d(TAG, "Rückgabestring(register): " + success);
 
         //Rückgabe eines Statuscodes
-        if(!success.equals("")) {
-             return jsonHandler.getInt(jsonHandler.convertToJSON(success), "fehlercode");
+        if(success.equals("")) {
+             //return jsonHandler.getInt(jsonHandler.convertToJSON(success), "fehlercode");
+            return 200;
         }
         else return 111;
     }
@@ -137,25 +140,42 @@ public class ActionHandler {
         String value = "{\"user\":\"" + name + "\"}";
         String success = "";
         try {
-            success = serverCommunication.sendGetWithBody("/"+name, value);
+            success = serverCommunication.sendGet(name);
         } catch (Exception e) {
             return 99;
         }
 
+
         //Logausgabe
-        Log.d(TAG, "Übergabestring: " + value);
-        Log.d(TAG, "Rückgabestring: " + success);
+        Log.d(TAG, "Übergabestring(login): " + value);
+        Log.d(TAG, "Rückgabestring(login): " + success);
+
+
+        JSONObject jObj = null;
+        try {
+            jObj = new JSONObject(success);
+        } catch (JSONException e) {
+            // Auto-generated catch block
+            e.printStackTrace();
+        }
+
 
         //String in JSON umwandeln und Daten extrahieren
         JsonAction jHandler = new JsonAction();
-        String salt_masterkeyString = jHandler.getString(jHandler.convertToJSON(success), "salt_masterkey");
-        String privkey_user_encString = jHandler.getString(jHandler.convertToJSON(success), "privkey_enc");
+        String pubkeyString = jHandler.getString(jObj, "pubkey");
+        Log.d(TAG, "Pubkey " + pubkeyString);
+        String salt_masterkeyString = jHandler.getString(jObj, "salt_masterkey");
+        Log.d(TAG, "Salt Masterkey " + salt_masterkeyString);
+        String privkey_user_encString = jHandler.getString(jObj, "privkey_enc");
+        Log.d(TAG, "privkey enc " + privkey_user_encString);
         byte[] salt_masterkey = Hex.decode(salt_masterkeyString);
         byte[] privkey_user_enc = Hex.decode(privkey_user_encString);
 
         //Masterkey bilden
         byte[] masterkey = functions.pbkf2(password, salt_masterkey);
         if(masterkey == null) {
+
+            Log.d(TAG, "1");
             return 98;
         }
 
@@ -163,14 +183,18 @@ public class ActionHandler {
         byte[] privkey_user = functions.decryptAESECB(masterkey, privkey_user_enc);
         myApp.setPrivkey_user(privkey_user);
         if(privkey_user == null) {
+
+            Log.d(TAG, "2");
             return 98;
         }
 
         //Rückgabe eines Statuscodes
         if(!success.equals("")) {
-            return jsonHandler.getInt(jsonHandler.convertToJSON(success), "fehlercode");
+            return 200;
         }
-        else return 98;
+        else {
+            return 98;
+        }
     }
 
 }

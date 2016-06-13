@@ -17,7 +17,7 @@ import java.net.URL;
 public class ServerCommunication {
 
     private final String ipAdress = "10.60.70.15";
-    private final String httpIP = "http://10.60.70.15";
+    private final String httpIP = "http://10.60.70.15/";
     private static final String TAG = ActionHandler.class.getName();
 
     public String sendPost(String param_url, String param_body) throws Exception {
@@ -56,6 +56,38 @@ public class ServerCommunication {
         }
 
         writer.close();
+        in.close();
+
+        return response.toString();
+    }
+
+    public String sendGet(String param_url) throws Exception {
+
+        String url = httpIP + param_url;
+
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        // optional default is GET
+        con.setRequestMethod("GET");
+
+        //add request header
+        //con.setRequestProperty("User-Agent", USER_AGENT);
+
+        int responseCode = con.getResponseCode();
+
+        if (responseCode != 200) {
+            return "";
+        }
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
         in.close();
 
         return response.toString();
