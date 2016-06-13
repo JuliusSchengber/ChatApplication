@@ -116,7 +116,7 @@ public class ActionHandler {
         String value = "{\"salt_masterkey\":\"" + Hex.toHexString(salt_masterkey) + "\",\"pubkey\":\"" + publickey64 + "\",\"privkey_enc\":\"" + Hex.toHexString(privkey_user_enc) + "\"}";
 
         //Verbindung zum Server herstellen
-        String success;
+        int success;
         try {
             success = serverCommunication.sendPost(name, value);
         } catch (Exception e) {
@@ -126,11 +126,7 @@ public class ActionHandler {
         Log.d(TAG, "Rückgabestring(register): " + success);
 
         //Rückgabe eines Statuscodes
-        if(success.equals("")) {
-             //return jsonHandler.getInt(jsonHandler.convertToJSON(success), "fehlercode");
-            return 200;
-        }
-        else return 111;
+        return success;
     }
 
     public int login(String name, String password) {
@@ -174,8 +170,6 @@ public class ActionHandler {
         //Masterkey bilden
         byte[] masterkey = functions.pbkf2(password, salt_masterkey);
         if(masterkey == null) {
-
-            Log.d(TAG, "1");
             return 98;
         }
 
@@ -183,13 +177,12 @@ public class ActionHandler {
         byte[] privkey_user = functions.decryptAESECB(masterkey, privkey_user_enc);
         myApp.setPrivkey_user(privkey_user);
         if(privkey_user == null) {
-
-            Log.d(TAG, "2");
             return 98;
         }
 
         //Rückgabe eines Statuscodes
         if(!success.equals("")) {
+            //wenn er nicht nicht 200 ist (siehe ServerCommunication)
             return 200;
         }
         else {

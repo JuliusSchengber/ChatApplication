@@ -20,7 +20,7 @@ public class ServerCommunication {
     private final String httpIP = "http://10.60.70.15/";
     private static final String TAG = ActionHandler.class.getName();
 
-    public String sendPost(String param_url, String param_body) throws Exception {
+    public int sendPost(String param_url, String param_body) throws Exception {
 
         String body = param_body;
         String url = httpIP + param_url;
@@ -30,7 +30,7 @@ public class ServerCommunication {
         //add request header
         con.setRequestMethod( "POST" );
         con.setDoInput(true);
-        con.setDoOutput(true);
+        con.setDoOutput(false);
         con.setUseCaches(false);
         con.setRequestProperty("Content-Type", "application/json");
         con.setRequestProperty( "Content-Length", String.valueOf(body.length()) );
@@ -42,23 +42,11 @@ public class ServerCommunication {
 
         int responseCode = con.getResponseCode();
 
-        if (responseCode != 200) {
-            return "";
-        }
+        Log.d(TAG, "ResponseCode (Register): "+responseCode);
 
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        StringBuffer response = new StringBuffer();
 
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
 
-        writer.close();
-        in.close();
-
-        return response.toString();
+        return responseCode;
     }
 
     public String sendGet(String param_url) throws Exception {
@@ -79,6 +67,8 @@ public class ServerCommunication {
         if (responseCode != 200) {
             return "";
         }
+
+        Log.d(TAG, "Responsecode(Login): " + responseCode);
 
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));

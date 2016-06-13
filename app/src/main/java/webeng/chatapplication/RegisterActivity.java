@@ -52,14 +52,19 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Integer response) {
             if (response == 200) {
-                Toast.makeText(getApplicationContext(), "Erfolgreich registriert", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(RegisterActivity.this, MainActivity.class);
-                startActivity(i);
+                Toast.makeText(getApplicationContext(), "Erfolgreich registriert.", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(RegisterActivity.this, MainActivity.class));
             } else {
-                Toast.makeText(getApplicationContext(), "Fehler " + response , Toast.LENGTH_SHORT).show();
+                if (response == 400) {
+                    Toast.makeText(getApplicationContext(), "Benutzer bereits vorhanden. ", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Es ist ein Fehler aufgetreten. " + response, Toast.LENGTH_SHORT).show();
+                }
             }
+
         }
     }
 }
+
 
 
