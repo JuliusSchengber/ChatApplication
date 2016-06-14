@@ -10,9 +10,13 @@ import org.json.JSONObject;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 /**
  * Created by JuliusSchengber1 on 07.06.16.
@@ -49,10 +53,6 @@ public class ActionHandler {
             return response;
         }
 
-    }
-    public int sendMessage(String name, String recipientName, String nachrichtparam){
-
-        return 1;
     }
 
     public int registerr(String name, String password){
@@ -195,6 +195,21 @@ public class ActionHandler {
         else {
             return 98;
         }
+    }
+
+    public String getPubKey(String username)throws Exception{
+        String success = serverCommunication.sendGet(username);
+        JSONObject jObj = null;
+        try {
+            jObj = new JSONObject(success);
+        } catch (JSONException e) {
+            // Auto-generated catch block
+            e.printStackTrace();
+        }
+        JsonAction jHandler = new JsonAction();
+        String pubkeyString = jHandler.getString(jObj, "pubkey");
+        Log.d(TAG, "Pubkey " + pubkeyString);
+        return pubkeyString;
     }
 
     public int deleteUser()throws Exception{
