@@ -4,22 +4,31 @@ package webeng.chatapplication;
  * Created by JuliusSchengber1 on 07.06.16.
  */
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 public class ViewActivity extends AppCompatActivity {
 
+    public static final String TAG = ViewActivity.class.getName();
+
     private MessengerApplication myApp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view);
-        setupButtons();
+        try{
+            setupButtons();
+        }
+        catch (Exception e){
+
+        }
     }
-    public void setupButtons(){
+    public void setupButtons()throws Exception{
         final Button sendMessage = (android.widget.Button) findViewById(R.id.sendMessage_button);
         sendMessage.setOnClickListener(new View.OnClickListener() {
             public void onClick(View w) {
@@ -46,5 +55,41 @@ public class ViewActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Erfolgreich ausgelggt",Toast.LENGTH_SHORT).show();
             }
         });
+        final Button delete = (android.widget.Button) findViewById(R.id.delete_button);
+        delete.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View w) {
+                new DeleteAction().execute();
+            }
+        });
     }
+
+    class DeleteAction extends AsyncTask<String, String, Integer>{
+        private MessengerApplication myApp = (MessengerApplication) getApplication();
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            ActionHandler ac = new ActionHandler(myApp);
+            Integer response;
+            try{
+                response = ac.deleteUser();
+            }
+            catch (Exception e){
+                response = 0;
+            }
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(Integer response) {
+            if (response == 200) {
+                Toast.makeText(getApplicationContext(), "Account gelöscht", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(ViewActivity.this, MainActivity.class));
+            } else {
+                Toast.makeText(getApplicationContext(), "Löschen fehlgeschlagen "+response, Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
+
+
 }

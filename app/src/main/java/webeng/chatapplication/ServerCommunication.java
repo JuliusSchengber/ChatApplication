@@ -63,9 +63,13 @@ public class ServerCommunication {
         //con.setRequestProperty("User-Agent", USER_AGENT);
 
         int responseCode = con.getResponseCode();
+        Log.d(TAG, "ResponseCode Get: " +responseCode);
 
+        if(responseCode == 404){
+            return "not found";
+        }
         if (responseCode != 200) {
-            return "";
+            return "x";
         }
 
         Log.d(TAG, "Responsecode(Login): " + responseCode);
@@ -111,5 +115,19 @@ public class ServerCommunication {
         clientSocket.close();
 
         return response.toString();
+    }
+
+    public int delete(String param_url) throws Exception {
+
+        URL url = new URL(httpIP + param_url);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoInput(true);
+        connection.setInstanceFollowRedirects(false);
+        connection.setRequestMethod("DELETE");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestProperty("charset", "utf-8");
+        connection.setUseCaches(false);
+        int responseCode = connection.getResponseCode();
+        return responseCode;
     }
 }

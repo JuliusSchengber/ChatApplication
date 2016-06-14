@@ -37,4 +37,14 @@
         android:layout_below="@+id/showInbox_button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="88dp" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete Account"
+        android:id="@+id/delete_button"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/showInbox_button"
+        android:layout_toEndOf="@+id/showInbox_button" />
 </RelativeLayout>

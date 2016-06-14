@@ -134,7 +134,7 @@ public class ActionHandler {
 
         //Verbindung zum Server herstellen
         String value = "{\"user\":\"" + name + "\"}";
-        String success = "";
+        String success;
         try {
             success = serverCommunication.sendGet(name);
         } catch (Exception e) {
@@ -146,6 +146,10 @@ public class ActionHandler {
         Log.d(TAG, "Übergabestring(login): " + value);
         Log.d(TAG, "Rückgabestring(login): " + success);
 
+
+        if(success.equals("not found")){
+            return 404;
+        }
 
         JSONObject jObj = null;
         try {
@@ -167,6 +171,10 @@ public class ActionHandler {
         byte[] salt_masterkey = Hex.decode(salt_masterkeyString);
         byte[] privkey_user_enc = Hex.decode(privkey_user_encString);
 
+        if(salt_masterkey == null){
+            return 98;
+        }
+
         //Masterkey bilden
         byte[] masterkey = functions.pbkf2(password, salt_masterkey);
         if(masterkey == null) {
@@ -181,13 +189,28 @@ public class ActionHandler {
         }
 
         //Rückgabe eines Statuscodes
-        if(!success.equals("")) {
-            //wenn er nicht nicht 200 ist (siehe ServerCommunication)
+        if(!success.equals("x")) {
             return 200;
         }
         else {
             return 98;
         }
+    }
+
+    public int deleteUser()throws Exception{
+
+        String username;
+        try {
+             username = myApp.getName();
+            Log.d(TAG, "username: " + username);
+        }
+        catch (Exception e){
+             username = "";
+            Log.d(TAG, "username: " + username);
+        }
+        int success = serverCommunication.delete(username);
+        Log.d(TAG, "success: " + success);
+        return success;
     }
 
 }

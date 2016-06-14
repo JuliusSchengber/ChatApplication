@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             else {
-                Toast.makeText(getApplicationContext(), "Login fehlgeschlagen" + response, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Login fehlgeschlagen. Fehlercode: " + response, Toast.LENGTH_SHORT).show();
             }
         }
 
