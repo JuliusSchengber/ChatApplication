@@ -42,17 +42,23 @@ public class SendMessageActivity extends AppCompatActivity {
 
         private MessengerApplication myApp = (MessengerApplication) getApplication();
 
+
         @Override
         protected Integer doInBackground(String... params) {
             ActionHandler a = new ActionHandler(myApp);
-            Integer response = a.sendMessage(myApp.getName(), params[0], params[1]);
+            Integer response = null;
+            try {
+                response = a.sendMessage(myApp.getName(), params[0], params[1]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return response;
         }
 
         @Override
         protected void onPostExecute (Integer response) {
 
-            if(response==0) {
+           if(response==0) {
                 Intent i = new Intent(SendMessageActivity.this, ViewActivity.class);
                 startActivity(i);
                 Toast.makeText(getApplicationContext(), "Nachricht erfolgreich an " + rcptString +"versendet.", Toast.LENGTH_SHORT).show();            }

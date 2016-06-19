@@ -20,7 +20,7 @@ public class ServerCommunication {
     private final String httpIP = "http://10.60.70.15/";
     private static final String TAG = ActionHandler.class.getName();
 
-    public int sendPost(String param_url, String param_body) throws Exception {
+    public String sendPost(String param_url, String param_body) throws Exception {
 
         String body = param_body;
         String url = httpIP + param_url;
@@ -41,12 +41,13 @@ public class ServerCommunication {
         writer.flush();
 
         int responseCode = con.getResponseCode();
+        String respoCode = Integer.toString(responseCode);
 
         Log.d(TAG, "ResponseCode (Register): "+responseCode);
 
 
 
-        return responseCode;
+        return respoCode;
     }
 
     public String sendGet(String param_url) throws Exception {
