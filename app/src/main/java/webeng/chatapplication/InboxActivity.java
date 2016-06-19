@@ -25,10 +25,15 @@ import java.util.ArrayList;
 
 
 public class InboxActivity extends AppCompatActivity {
+    private TextView nachricht;
+    private MessengerApplication myApp;
+    private static final String TAG = MessengerApplication.class.getName();
 
-        private TextView nachricht;
-        private MessengerApplication myApp;
-        private static final String TAG = MessengerApplication.class.getName();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        new GetMessageTask().execute();
+    }
 
     class GetMessageTask extends AsyncTask<String, String, String> {
         private ProgressDialog Dialog = new ProgressDialog(InboxActivity.this);
@@ -37,12 +42,14 @@ public class InboxActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute()
         {
+            Log.d(TAG, "start onPreExecute: ");
             Dialog.setMessage("Nachrichten abrufen...");
             Dialog.show();
         }
 
         @Override
         protected String doInBackground(String... params) {
+            Log.d(TAG, "start doInBackground");
             ActionHandler actionHandler = new ActionHandler(myApp);
             String response = null;
             try {
@@ -55,10 +62,12 @@ public class InboxActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute (final String response) {
+            Log.d(TAG, "start onPostExecute");
             Dialog.dismiss();
             if(response != null) {
                 Toast.makeText(getApplicationContext(), "Nachrichten erfolgreich abgerufen", Toast.LENGTH_LONG).show();
                nachricht = (TextView) findViewById(R.id.text_textView);
+                Log.d(TAG, "Übergabestring: " + response);
                 nachricht.setText("Absender" + response);
 
             }

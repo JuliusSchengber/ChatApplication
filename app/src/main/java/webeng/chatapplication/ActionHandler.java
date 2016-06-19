@@ -376,6 +376,7 @@ public class ActionHandler {
         }
 
     public String receiveMessage(String name) throws Exception {
+        Log.d(TAG, "starte receiveMessage");
         //Unix-Zeit
         Long unixTime = System.currentTimeMillis() / 1000L;
         String timestamp = unixTime.toString();
