@@ -45,7 +45,12 @@ public class SendMessageActivity extends AppCompatActivity {
         @Override
         protected Integer doInBackground(String... params) {
             ActionHandler a = new ActionHandler(myApp);
-            Integer response = a.sendMessage(myApp.getName(), params[0], params[1]);
+            Integer response = null;
+            try {
+                response = a.sendMessage(myApp.getName(), params[0], params[1]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return response;
         }
 

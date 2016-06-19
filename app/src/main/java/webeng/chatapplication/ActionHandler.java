@@ -116,7 +116,7 @@ public class ActionHandler {
         String value = "{\"salt_masterkey\":\"" + Hex.toHexString(salt_masterkey) + "\",\"pubkey\":\"" + publickey64 + "\",\"privkey_enc\":\"" + Hex.toHexString(privkey_user_enc) + "\"}";
 
         //Verbindung zum Server herstellen
-        int success;
+        String success;
         try {
             success = serverCommunication.sendPost(name, value);
         } catch (Exception e) {
@@ -126,7 +126,8 @@ public class ActionHandler {
         Log.d(TAG, "Rückgabestring(register): " + success);
 
         //Rückgabe eines Statuscodes
-        return success;
+
+        return 89;
     }
 
     public int login(String name, String password) {
@@ -226,6 +227,138 @@ public class ActionHandler {
         int success = serverCommunication.delete(username);
         Log.d(TAG, "success: " + success);
         return success;
+    }
+
+    public int sendMessage(String name, String recipientName, String nachrichtparam) throws Exception {
+        String status = getPubKey(recipientName);
+        if(status.equals("99")) {
+            return 99;
+        }
+        if(status.length() < 10) {
+            return 98;
+        }
+        else {
+            byte[] nachricht = nachrichtparam.getBytes();
+            String pubKey = status.replaceAll("(-+BEGIN PUBLIC KEY-+\\r?\\n|-+END PUBLIC KEY-+\\r?\\n?)", "");
+            byte[] pubkey_recipient = Base64.decode(pubKey);
+
+
+            //Symmetrischen Schlüssel bilden
+            KeyGenerator kg = null;
+            try {
+                kg = KeyGenerator.getInstance("AES");
+            } catch (NoSuchAlgorithmException e) {
+                return 98;
+            }
+            SecureRandom securerandom = new SecureRandom();
+            byte bytes[] = new byte[20];
+            securerandom.nextBytes(bytes);
+            kg.init(128, securerandom);
+            SecretKey key_recipient_secret = kg.generateKey();
+            byte[] key_recipient = key_recipient_secret.getEncoded();
+
+            //Initialisierungsvektor erzeugen
+            final Random r = new SecureRandom();
+            byte[] iv = new byte[16];
+            r.nextBytes(iv);
+
+            //Nachricht verschlüsseln
+            byte[] cipher = functions.encryptAESCBC(nachricht, pubkey_recipient, iv, key_recipient_secret);
+            if(cipher == null) {
+                return 98;
+            }
+
+            //key_recipient mit Public Key verschlüsseln
+            byte[] key_recipient_enc = functions.encryptRSAPubKey(pubkey_recipient, key_recipient);
+            if(key_recipient_enc == null) {
+                return 98;
+            }
+
+            //Bildung von SHA-256 Hash für sig_recipient
+            String text = name + Base64.toBase64String(cipher) + Base64.toBase64String(iv) + Base64.toBase64String(key_recipient_enc);
+            byte [] textBytes = text.getBytes();
+
+            MessageDigest md = null;
+            try {
+                md = MessageDigest.getInstance("SHA-256");
+            } catch (NoSuchAlgorithmException e) {
+                return 98;
+            }
+            md.update(textBytes); // Change this to "UTF-16" if needed
+            byte[] sig_recipient = md.digest();
+            String sig_recipientHex = Hex.toHexString(sig_recipient).toLowerCase();
+
+            //Verschlüsselung des Hashes mit dem Private Key
+            byte[] sig_recipient_enc = functions.encryptRSAPrivKey(myApp.getPrivkey_user(), sig_recipientHex.getBytes());
+
+            if(sig_recipient_enc == null) {
+                return 98;
+            }
+
+            //Unix-Zeit
+            Long unixTime = System.currentTimeMillis() / 1000L;
+            String timestamp = unixTime.toString();
+
+            //Bildung von SHA-256 Hash für sig_service
+            String text1 = "{\"Id\":\"" + name + "\",\"Cipher\":\"" + Base64.toBase64String(cipher) + "\",\"Iv\":\"" + Base64.toBase64String(iv) + "\",\"key_recipient_enc\":\"" + Base64.toBase64String(key_recipient_enc) + "\",\"sig_recipient\":\"" + Base64.toBase64String(sig_recipient_enc) + "\"}" + timestamp + recipientName;
+            String text3 = text1.replace("/","\\/");
+            byte [] text1Bytes = text3.getBytes();
+            MessageDigest md1 = null;
+            try {
+                md1 = MessageDigest.getInstance("SHA-256");
+            } catch (NoSuchAlgorithmException e) {
+                return 98;
+            }
+            md1.update(text1Bytes); // Change this to "UTF-16" if needed
+            byte[] sig_service = md1.digest();
+            String sig_serviceHex = Hex.toHexString(sig_service).toLowerCase();
+
+            //Verschlüsselung des Hashes mit dem Private Key
+            byte[] sig_service_enc = functions.encryptRSAPrivKey(myApp.getPrivkey_user(), sig_serviceHex.getBytes());
+            if(sig_service_enc == null) {
+                return 98;
+            }
+
+            //Id_enc bilden
+            //Bildung von MD5 Hash für Id_enc
+            String text2 = name + timestamp;
+            byte [] text2Bytes = text2.getBytes();
+            MessageDigest md2 = null;
+            try {
+                md2 = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                return 98;
+            }
+            md2.update(text2Bytes); // Change this to "UTF-16" if needed
+            byte[] id = md2.digest();
+            String idHex = Hex.toHexString(id).toLowerCase();
+
+            //Verschlüsselung des Hashes mit dem Private Key
+            byte[] id_enc = functions.encryptRSAPrivKey(myApp.getPrivkey_user(), idHex.getBytes());
+            if(id_enc == null) {
+                return 98;
+            }
+
+            String value = "{\"Innerer_Umschlag\":{\"Id\":\"" + name + "\",\"Cipher\":\"" + Base64.toBase64String(cipher) + "\",\"Iv\":\"" + Base64.toBase64String(iv) + "\",\"key_recipient_enc\":\"" + Base64.toBase64String(key_recipient_enc) + "\",\"sig_recipient\":\"" + Base64.toBase64String(sig_recipient_enc) + "\"},\"Empfaenger\":\"" + recipientName + "\",\"timestamp\":" + timestamp + ",\"id_enc\":\"" + Base64.toBase64String(id_enc) + "\",\"sig_service\":\"" + Base64.toBase64String(sig_service_enc) + "\"}";
+
+            //Verbindung zum Server herstellen
+            String success = "";
+            try {
+                success = serverCommunication.sendPost("/Msg", value);
+            } catch (Exception e) {
+                return 99;
+            }
+
+            //Logausgabe
+            Log.d(TAG, "Übergabestring: " + value);
+            Log.d(TAG, "Rückgabestring: " + success);
+
+            //Rückgabe eines Statuscodes
+            if(!success.equals("")) {
+                return jsonHandler.getInt(jsonHandler.convertToJSON(success), "fehlercode");
+            }
+            else return 98;
+        }
     }
 
 }
