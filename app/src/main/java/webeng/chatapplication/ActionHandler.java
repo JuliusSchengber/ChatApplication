@@ -7,15 +7,19 @@ import android.widget.Toast;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Random;
 
 import javax.crypto.KeyGenerator;
@@ -370,5 +374,117 @@ public class ActionHandler {
                 } else return 98;
             }
         }
+
+    public String receiveMessage(String name) throws Exception {
+        //Unix-Zeit
+        Long unixTime = System.currentTimeMillis() / 1000L;
+        String timestamp = unixTime.toString();
+
+        //Id_enc bilden
+        //Bildung von MD5 Hash für Id_enc
+        String text2 = name + timestamp;
+        byte [] text2Bytes = text2.getBytes();
+        MessageDigest md2 = null;
+        try {
+            md2 = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        md2.update(text2Bytes); // Change this to "UTF-16" if needed
+        byte[] id = md2.digest();
+        String idHex = Hex.toHexString(id);
+
+        //Verschlüsselung des Hashes mit dem Private Key
+        byte[] id_enc = new byte[0];
+        try {
+            id_enc = functions.encryptRSAPrivKey(myApp.getPrivkey_user(), idHex.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        if(id_enc == null) {
+            return null;
+        }
+
+        //Verbindung zum Server herstellen
+        String success = "";
+        JsonAction jHandler = new JsonAction();
+        String value = "{\"id\":\"" + name + "\",\"timestamp\":\"" + timestamp + "\",\"id_enc\":\"" + Base64.toBase64String(id_enc) + "\"}";
+        String url = "/Msg";
+        ServerCommunication http = new ServerCommunication();
+        try {
+            success = http.sendGetWithBody(url, value);
+        } catch (IOException e1) {
+            return null;
+        }
+        //Logausgabe
+        Log.d(TAG, "Übergabestring: " + value);
+        Log.d(TAG, "Rückgabestring: " + success);
+
+        JSONObject json = jHandler.convertToJSON(success);
+
+
+        JSONArray nachrichten = jHandler.getArray(json, "Nachrichten");
+
+        ArrayList<JSONObject> nachrichtenList = new ArrayList<>();
+        try {
+            for(int i=0; i<1; i++) {
+                nachrichtenList.add(nachrichten.getJSONObject(i));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //Messages in ArrayList speichern
+        String messages = "";
+
+        for(int i=0; i<nachrichtenList.size(); i++) {
+            //Bildung von SHA-256 Hash für sig_recipient
+            JSONObject innererUmschlag = new JSONObject();
+            try {
+                innererUmschlag = nachrichtenList.get(i).getJSONObject("Innerer_Umschlag");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String status = getPubKey(jHandler.getString(innererUmschlag,"Sender"));
+            if(status.length() < 10) {
+                return null;
+            }
+            else {
+                String pubKey = status.replaceAll("(-+BEGIN PUBLIC KEY-+\\r?\\n|-+END PUBLIC KEY-+\\r?\\n?)", "");
+                byte[] pubkey_recipient = Base64.decode(pubKey);
+                byte[] signature = Base64.decode(jHandler.getString(innererUmschlag,"sig_recipient"));
+                byte[] sig_recipientByte = functions.decryptRSAPubKey(pubkey_recipient, signature);
+                String sig_recipientString = new String(Base64.decode(Base64.toBase64String(sig_recipientByte)));
+                String text = jHandler.getString(innererUmschlag,"Sender") + jHandler.getString(innererUmschlag,"Cipher") + jHandler.getString(innererUmschlag,"Iv") + jHandler.getString(innererUmschlag,"key_recipient_enc");
+                byte [] textBytes = text.getBytes();
+
+                MessageDigest md = null;
+                try {
+                    md = MessageDigest.getInstance("SHA-256");
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+                md.update(textBytes); // Change this to "UTF-16" if needed
+                byte[] sig_recipient = md.digest();
+                String sig_recipientHex = Hex.toHexString(sig_recipient).toLowerCase();
+
+                //sig_recipient überprüfen
+                if(!sig_recipientHex.equals(sig_recipientString)) {
+                    return null;
+                }
+                else {
+                    //key_recipient_enc entschlüsseln
+                    byte[] key_recipient = functions.decryptRSAPrivKey(myApp.getPrivkey_user(), Base64.decode(jHandler.getString(innererUmschlag,"key_recipient_enc")));
+
+                    //Cipher entschlüsseln
+                    byte[] nachricht = functions.decryptAESCBC(Base64.decode(jHandler.getString(innererUmschlag,"Cipher")), key_recipient, Base64.decode(jHandler.getString(innererUmschlag, "Iv")));
+                    String message = jHandler.getString(innererUmschlag,"Sender") + new String(nachricht);
+                    messages = message;
+                }
+            }
+        }
+
+        return messages;
+    }
 
     }
