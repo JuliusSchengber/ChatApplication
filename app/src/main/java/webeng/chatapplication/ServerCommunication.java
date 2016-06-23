@@ -20,7 +20,7 @@ public class ServerCommunication {
     private final String httpIP = "http://10.60.70.15/";
     private static final String TAG = ActionHandler.class.getName();
 
-    public String sendPost(String param_url, String param_body) throws Exception {
+    public int sendPost(String param_url, String param_body) throws Exception {
 
         String body = param_body;
         String url = httpIP + param_url;
@@ -35,19 +35,19 @@ public class ServerCommunication {
         con.setRequestProperty("Content-Type", "application/json");
         con.setRequestProperty( "Content-Length", String.valueOf(body.length()) );
 
+        Log.d(TAG, "Send POST to: " + url);
         // Send post request
         OutputStreamWriter writer = new OutputStreamWriter( con.getOutputStream() );
         writer.write( body );
         writer.flush();
 
         int responseCode = con.getResponseCode();
-        String respoCode = Integer.toString(responseCode);
 
-        Log.d(TAG, "ResponseCode (Register): "+responseCode);
-
+        Log.d(TAG, "ResponseCode (POST): "+responseCode);
 
 
-        return respoCode;
+
+        return responseCode;
     }
 
     public String sendGet(String param_url) throws Exception {

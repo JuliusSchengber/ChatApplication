@@ -4,6 +4,8 @@ package webeng.chatapplication;
  * Created by JuliusSchengber1 on 07.06.16.
  */
 
+import android.util.Log;
+
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -21,6 +23,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.BadPaddingException;
@@ -197,7 +200,10 @@ public class Functions {
     public byte[] encryptRSAPubKey (byte[] pubkey, byte[] text) {
         PublicKey publicKey = null;
         try {
-            publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(pubkey));
+            X509EncodedKeySpec keyspec = new X509EncodedKeySpec(pubkey);
+            Log.d("", "keyspec: " + keyspec);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            publicKey = kf.generatePublic(keyspec);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeySpecException e) {
@@ -214,8 +220,8 @@ public class Functions {
         try {
             c.init(Cipher.ENCRYPT_MODE, publicKey);
         } catch (InvalidKeyException e) {
-            return null;
-            //e.printStackTrace();
+
+            e.printStackTrace();
         }
         byte[] text_enc = null;
         try {

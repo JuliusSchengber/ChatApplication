@@ -58,7 +58,7 @@ public class SendMessageActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute (Integer response) {
 
-           if(response==0) {
+           if(response==200) {
                 Intent i = new Intent(SendMessageActivity.this, ViewActivity.class);
                 startActivity(i);
                 Toast.makeText(getApplicationContext(), "Nachricht erfolgreich an " + rcptString +"versendet.", Toast.LENGTH_SHORT).show();            }
