@@ -61,7 +61,7 @@ public class SendMessageActivity extends AppCompatActivity {
            if(response==200) {
                 Intent i = new Intent(SendMessageActivity.this, ViewActivity.class);
                 startActivity(i);
-                Toast.makeText(getApplicationContext(), "Nachricht erfolgreich an " + rcptString +"versendet.", Toast.LENGTH_SHORT).show();            }
+                Toast.makeText(getApplicationContext(), "Nachricht erfolgreich an " + rcptString +" versendet.", Toast.LENGTH_SHORT).show();            }
             else {
                 Toast.makeText(getApplicationContext(), "Es ist ein Fehler aufgetreten, die Nachricht wurde nicht an " + rcptString + " zugestellt. Fehlercode: " + response +" Bitte erneut versuchen.", Toast.LENGTH_SHORT).show();
             }

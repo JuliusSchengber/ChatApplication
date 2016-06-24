@@ -28,23 +28,22 @@ public class ServerCommunication {
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         //add request header
-        con.setRequestMethod( "POST" );
+        con.setRequestMethod("POST");
         con.setDoInput(true);
         con.setDoOutput(false);
         con.setUseCaches(false);
         con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty( "Content-Length", String.valueOf(body.length()) );
+        con.setRequestProperty("Content-Length", String.valueOf(body.length()));
 
         Log.d(TAG, "Send POST to: " + url);
         // Send post request
-        OutputStreamWriter writer = new OutputStreamWriter( con.getOutputStream() );
-        writer.write( body );
+        OutputStreamWriter writer = new OutputStreamWriter(con.getOutputStream());
+        writer.write(body);
         writer.flush();
 
         int responseCode = con.getResponseCode();
 
-        Log.d(TAG, "ResponseCode (POST): "+responseCode);
-
+        Log.d(TAG, "ResponseCode (POST): " + responseCode);
 
 
         return responseCode;
@@ -64,13 +63,13 @@ public class ServerCommunication {
         //con.setRequestProperty("User-Agent", USER_AGENT);
 
         int responseCode = con.getResponseCode();
-        Log.d(TAG, "ResponseCode Get: " +responseCode);
 
-        if(responseCode == 404){
+        if (responseCode == 404) {
             return "not found";
         }
         if (responseCode != 200) {
-            return "x";
+
+            return "" + responseCode;
         }
 
         Log.d(TAG, "Responsecode(Login): " + responseCode);
@@ -88,36 +87,6 @@ public class ServerCommunication {
         return response.toString();
     }
 
-    public String sendGetWithBody(String param_url, String value) throws IOException {
-        String modifiedSentence;
-        Socket clientSocket = new Socket(ipAdress, 80);
-        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        String content = value;
-        outToServer.writeBytes("GET " + param_url + " HTTP/1.1" + "\n" +
-                        "Host: " + ipAdress + "\n" +
-                        "Content-Length: " + content.length() + "\n" +
-                        "\n" +
-                        content
-        );
-        Log.d(TAG, "SEND HTTP GET TO: " + ipAdress + param_url);
-        StringBuffer response = new StringBuffer();
-
-        while ((modifiedSentence = inFromServer.readLine()) != null) {
-            if(modifiedSentence.startsWith("[") || modifiedSentence.startsWith("{")) {
-                response.append(modifiedSentence);
-            }
-        }
-
-
-        Log.d(TAG, "response: " + response);
-        inFromServer.close();
-
-        clientSocket.close();
-
-        return response.toString();
-    }
-
     public int delete(String param_url) throws Exception {
 
         URL url = new URL(httpIP + param_url);
@@ -130,5 +99,41 @@ public class ServerCommunication {
         connection.setUseCaches(false);
         int responseCode = connection.getResponseCode();
         return responseCode;
+    }
+
+
+    public String sendPatch(String param_url, String value) throws Exception {
+
+        String body = value;
+        String url = httpIP + param_url;
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        //add request header
+        con.setRequestMethod("PATCH");
+        con.setDoInput(true);
+        con.setDoOutput(false);
+        con.setUseCaches(false);
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Content-Length", String.valueOf(body.length()));
+
+        Log.d(TAG, "Send PATCH to: " + url);
+        // Send post request
+        OutputStreamWriter writer = new OutputStreamWriter(con.getOutputStream());
+        writer.write(body);
+        writer.flush();
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        Log.d(TAG, "Response (Patch): " + response.toString());
+        return response.toString();
     }
 }
