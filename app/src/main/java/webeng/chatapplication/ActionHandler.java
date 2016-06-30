@@ -1,18 +1,17 @@
 package webeng.chatapplication;
 
-import android.content.Context;
-import android.nfc.Tag;
-import android.util.Log;
-import android.widget.Toast;
 
-import org.bouncycastle.jcajce.provider.symmetric.ARC4;
+import android.util.Log;
+
+
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
-import org.json.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+
+
 import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -20,9 +19,13 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
 import java.util.Random;
 
 import javax.crypto.KeyGenerator;
@@ -73,9 +76,12 @@ public class ActionHandler {
         //publickey und privatekey in Variablen speichern
         Key pubkey_user = kp.getPublic();
         Key privkey_user = kp.getPrivate();
+
         byte[] privateKeyByte = privkey_user.getEncoded();
         byte[] publicKeyByte = pubkey_user.getEncoded();
+
         String publickey = functions.writePublicKey(publicKeyByte);
+
         String publickey64 = Base64.toBase64String(publickey.getBytes());
 
         //privkey_user zu privkey_user_enc verschlüsseln
@@ -94,6 +100,8 @@ public class ActionHandler {
         } catch (Exception e) {
             success = 98;
         }
+
+        Log.d(TAG, "privatekeyerstellung: " + new String(privateKeyByte));
         Log.d(TAG, "Übergabestring(register): " + value);
         Log.d(TAG, "Rückgabestring(register): " + success);
 
@@ -156,6 +164,8 @@ public class ActionHandler {
 
         //PrivateKey entschlüsseln
         byte[] privkey_user = functions.decryptAESECB(masterkey, privkey_user_enc);
+        Log.d(TAG, "Priv_key_user: " + new String(privkey_user_enc));
+        String priv = new String(privkey_user);
         myApp.setPrivkey_user(privkey_user);
         if(privkey_user == null) {
             return 98;
@@ -285,16 +295,23 @@ public class ActionHandler {
                 String sig_recipient_transfer = Base64.toBase64String(sig_recipient);
 
                 //Bildung von SHA-256 Hash für sig_service
-                String text1 = "{\"Id\":\"" + name + "\",\"Cipher\":\"" + cipher_transfer + "\",\"Iv\":\"" + iv_transfer + "\",\"key_recipient_enc\":\"" + key_recipient_enc_transfer + "\",\"sig_recipient\":\"" + sig_recipient_enc_transfer + "\"}" + timestamp + recipientName;
+                String text1 = "{\"sender\":\"" + name + "\",\"cipher\":\"" + cipher_transfer + "\",\"iv\":\"" + iv_transfer + "\",\"key_recipient_enc\":\"" + key_recipient_enc_transfer + "\",\"sig_recipient\":\"" + sig_recipient_enc_transfer + "\"}" + timestamp + recipientName;
+                Log.d(TAG, "text1: " + text1);
                 String text3 = text1.replace("/", "\\/");
-                byte[] text1Bytes = text3.getBytes();
-                MessageDigest md1 = null;
+                String bla = name + cipher_transfer + iv_transfer + key_recipient_enc_transfer + sig_recipient_enc_transfer + timestamp + recipientName;
+                Log.d(TAG, "bla: " + bla);
+                byte[] text1Bytes = text1.getBytes();
+                byte[] blaByte = bla.getBytes();
+                Log.d(TAG, "blyByte: " + blaByte);
+
+
+                /*MessageDigest md1 = null;
                 try {
                     md1 = MessageDigest.getInstance("SHA-256");
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
-                md1.update(text1Bytes); // Change this to "UTF-16" if needed
+                md1.update(blaByte); // Change this to "UTF-16" if needed
                 byte[] sig_service = md1.digest();
                 String sig_serviceHex = Hex.toHexString(sig_service).toLowerCase();
 
@@ -303,9 +320,14 @@ public class ActionHandler {
                 if (sig_service_enc == null) {
                     return 100;
                 }
+                */
+                byte[] sig = functions.sign(blaByte, myApp.getPrivkey_user());
 
-                String sig_service_transfer = Base64.toBase64String(sig_service);
 
+                String sigString = Base64.toBase64String(sig);
+
+                //String sig_service_transfer = Base64.toBase64String(sig_service);
+                Log.d(TAG, "sig_service_enc: " +sigString);
 
                 //Id_enc bilden
                 //Bildung von MD5 Hash für Id_enc
@@ -327,7 +349,7 @@ public class ActionHandler {
                     return 101;
                 }
 
-                String value = "{\"inner_envelope\":{\"cipher\":\""+ cipher_transfer + "\",\"iv\":\""+ iv_transfer +"\",\"key_recipient_enc\":\""+ key_recipient_enc_transfer +"\",\"sig_recipient\":\""+ sig_recipient_transfer +"\"},\"receiver\":\""+ recipientName +"\",\"timestamp\":\""+ timestamp +"\",\"sig_service\":\""+ sig_service_transfer +"\"}";
+                String value = "{\"inner_envelope\":{ \"sender\":\"" + name + "\",\"cipher\":\""+ cipher_transfer + "\",\"iv\":\""+ iv_transfer +"\",\"key_recipient_enc\":\""+ key_recipient_enc_transfer +"\",\"sig_recipient\":\""+ sig_recipient_transfer +"\"},\"receiver\":\""+ recipientName +"\",\"timestamp\":\""+ timestamp +"\",\"sig_service\":\""+ sigString +"\"}";
 
                 //Verbindung zum Server herstellen
                 int success;

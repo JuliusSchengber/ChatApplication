@@ -18,6 +18,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -271,6 +273,33 @@ public class Functions {
             e.printStackTrace();
         }
         return text_dec;
+    }
+
+    public byte[] sign(byte[]text, byte[] privkey){
+        PrivateKey privKey = null;
+        Signature sig = null;
+        byte[] signature;
+        try{
+            privKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privkey));
+            sig = Signature.getInstance("SHA256withRSA");
+            sig.initSign(privKey);
+            sig.update(text);
+            signature = sig.sign();
+        }
+        catch (NoSuchAlgorithmException e){
+            e.printStackTrace();
+            signature = null;
+        }catch (InvalidKeySpecException e){
+            signature = null;
+            e.printStackTrace();
+        }catch (InvalidKeyException e){
+            signature = null;
+            e.printStackTrace();
+        }catch (SignatureException e){
+            signature = null;
+            e.printStackTrace();
+        }
+        return signature;
     }
 
     /**

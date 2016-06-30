@@ -27,7 +27,7 @@ public class ServerCommunication {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        //add request header
+        //request header
         con.setRequestMethod("POST");
         con.setDoInput(true);
         con.setDoOutput(false);
@@ -42,9 +42,9 @@ public class ServerCommunication {
         writer.flush();
 
         int responseCode = con.getResponseCode();
+        String r = con.getContentEncoding();
 
         Log.d(TAG, "ResponseCode (POST): " + responseCode);
-
 
         return responseCode;
     }
